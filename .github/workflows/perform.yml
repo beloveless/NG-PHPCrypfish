@@ -44,6 +44,9 @@ jobs:
       - name: Run PHPCrypfish Container
         run: docker run -d --name blowfish-apache --network isolated ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
 
+      - name: Show running containers
+        run: docker ps
+
       # - name: Update Apache Configuration
       #   run: docker exec blowfish-apache sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/apache2/httpd.conf
       
