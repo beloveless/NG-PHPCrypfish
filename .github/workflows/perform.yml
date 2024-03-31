@@ -97,7 +97,7 @@ jobs:
           # Fungsi untuk melakukan curl ke URL dengan output yang ditampilkan
           function test_url() {
           echo "Accessing URL: $1"  # Debug output
-            curl --silent --output /dev/null "$1"  # Mengirim output curl ke /dev/null
+            curl --output /dev/null "$1"  # Mengirim output curl ke /dev/null
           }
         
           # Loop sebanyak 100 kali menggunakan race condition
@@ -119,7 +119,7 @@ jobs:
           echo "Waktu eksekusi: $durasi_detik detik dan $durasi_nanodetik nanodetik."
         
           # Memeriksa status HTTP terakhir untuk memastikan bahwa proses berjalan dengan benar
-          last_http_status=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+          last_http_status=$(curl -o /dev/null -w "%{http_code}" "$URL")
           if [[ $last_http_status -eq 200 ]]; then
             echo "Proses selesai dengan benar. Status HTTP terakhir: $last_http_status"
           else
@@ -147,11 +147,6 @@ jobs:
       #     # -j   runs the AJAX spider
       #     # -U   specifies which user to select from the context file
           cmd_options: -U "admin" -n badcrud.context
-
-      - name: Display Scanned URLs
-        run: |
-          echo "Scanned URLs:"
-          cat report_md.md | grep '^[0-9]\+\. http'
           
       - name: stop docker
         run: docker stop blowfish-apache
