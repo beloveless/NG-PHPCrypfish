@@ -17,14 +17,13 @@ jobs:
         run: |
           docker build -t phpcrypfish:latest .
 
-      - name: Save PHPCrypfish Image to Artifact
-        run: docker save -o /tmp/phpcrypfish.tar phpcrypfish:latest
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: phpcrypfish
-          path: /tmp/phpcrypfish.tar
+      - name: Push Image to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+          docker tag phpcrypfish ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
+        env:
+          DOCKER_CLI_EXPERIMENTAL: enabled
           
   dast:
     name: Dynamic Analysis
@@ -37,26 +36,13 @@ jobs:
       - name: Create isolated network
         run: docker network create --driver bridge isolated 
 
-      - name: Download image from artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: phpcrypfish
-          path: /tmp
-      
-      - name: Load saved image
-        run: docker load < /tmp/phpcrypfish.tar
-
-      - name: Run PHPCrypfish Container
-        run: docker-compose up -d
-
-      - name: Push Image to Docker Hub
+      - name: Download image from Docker Hub
         run: |
           echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
-          docker tag phpcrypfish ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
-        env:
-          DOCKER_CLI_EXPERIMENTAL: enabled
-      
+          docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
+
+      - name: Run PHPCrypfish Container
+        run: docker run -d --name blowfish-apache --network isolated ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
 
       - name: Check host directory
         run: |
