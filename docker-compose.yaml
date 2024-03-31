@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   blowfish-apache:
-    image: "${DOCKER_HUB_USERNAME}/${DOCKER_HUB_ACCESS_TOKEN}/phpcrypfish:latest"
+    image: "${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}/phpcrypfish:latest"
     container_name: blowfish-apache
     ports:
       - "80:80"
