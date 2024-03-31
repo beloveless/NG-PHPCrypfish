@@ -36,14 +36,13 @@ jobs:
       - name: Create isolated network
         run: docker network create --driver bridge isolated 
 
-      # - name: Download image from Docker Hub
-      #   run: |
-      #     echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
-      #     docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
+      - name: Download image from Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+          docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
 
       - name: Run PHPCrypfish Container
-        # run: docker run -d --name blowfish-apache --network isolated ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
-        run: docker-compose up -d
+        run: docker run -d --name blowfish-apache --network isolated ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
 
       - name: Show running containers
         run: docker ps
@@ -80,8 +79,8 @@ jobs:
       - name: Check inside PHPCrypfish container
         run: |
           docker exec blowfish-apache ls -la /var/www/html/
-          docker exec blowfish-apache cat /var/www/html/index.php
-          docker exec blowfish-apache php /var/www/html/cek_koneksi.php
+        #  docker exec blowfish-apache cat /var/www/html/index.php
+        #  docker exec blowfish-apache php /var/www/html/cek_koneksi.php
       # - name: Check inside MySQL container
       #   run: |
       #     docker exec docker-mysql mysql -uroot -ppassword -hlocalhost
