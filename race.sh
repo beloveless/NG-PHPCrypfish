@@ -8,7 +8,7 @@ for y in $(seq 1 10); do
     (
     for x in $(seq 1 10); do
         start_time=$(date +%s) # Waktu mulai
-        response=$(curl -s "http://$URL/login.php?id=1&amount=10")
+        response=$(curl -s "http://${{ env.URL }}/login.php?id=1&amount=10")
         end_time=$(date +%s) # Waktu selesai
         elapsed_time=$((end_time - start_time)) # Waktu eksekusi
 
