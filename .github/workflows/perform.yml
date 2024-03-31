@@ -44,6 +44,12 @@ jobs:
       - name: Run PHPCrypfish Container
         run: docker run -d --name blowfish-apache --network isolated ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
 
+      - name: Update Apache Configuration
+        run: docker exec blowfish-apache sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/apache2/httpd.conf
+      
+      - name: Display Apache Container Logs
+        run: docker logs blowfish-apache
+
       - name: Check host directory
         run: |
               pwd
@@ -146,22 +152,6 @@ jobs:
           
       - name: stop docker
         run: docker stop blowfish-apache
-
-
-  # performance-test:
-  #   name: Performance Test
-  #   needs: [build-image, dast]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Calculate End-Users's Duration
-  #       run: |
-  #         start_time=${{ needs.build-image.outputs.start_time }}
-  #         end_time=$(date +%s)
-  #         duration=$((end_time - start_time))
-  #         minutes=$((duration / 60))
-  #         seconds=$((duration % 60))
-  #         echo "Total process by end-user's perspective took $duration seconds."
-  #         echo "Or, more precisely, $minutes minute(s) and $seconds second(s)."
 
   sast:
     name: SonarCloud
