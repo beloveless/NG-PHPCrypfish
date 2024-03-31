@@ -1,0 +1,198 @@
+name: Performance Testing
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-image:
+    name: Build Images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4 
+
+      - name: Build PHPCrypfish Image
+        run: |
+          docker build -t phpcrypfish:latest .
+
+      - name: Save PHPCrypfish Image to Artifact
+        run: docker save -o /tmp/phpcrypfish.tar phpcrypfish:latest
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: phpcrypfish
+          path: /tmp/phpcrypfish.tar
+          
+  dast:
+    name: Dynamic Analysis
+    needs: build-image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Create isolated network
+        run: docker network create --driver bridge isolated 
+
+      - name: Download image from artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: phpcrypfish
+          path: /tmp
+      
+      - name: Load saved image
+        run: docker load < /tmp/phpcrypfish.tar
+
+      - name: Run PHPCrypfish Container
+        run: docker-compose up -d
+
+      - name: Push Image to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+          docker tag phpcrypfish ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
+        env:
+          DOCKER_CLI_EXPERIMENTAL: enabled
+      
+
+      - name: Check host directory
+        run: |
+              pwd
+              ls -la
+              ls -la db/
+              
+      - name: Copy source code to PHPCrypfish container
+        run: docker cp web2/. blowfish-apache:/var/www/html
+
+      - name: Obfuscate
+        run: docker exec blowfish-apache php -r "PHPCrypfish::obfuscate('/var/www/html/');"
+
+      # Add a step to copy the obfuscated code back to the runner's filesystem
+      - name: Copy code from container
+        run: docker cp blowfish-apache:/var/www/html ./obfuscated_code
+      
+      # Upload the code as an artifact
+      - name: Upload code as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: obfuscated-source-code
+          path: ./obfuscated_code
+
+      - name: Check inside PHPCrypfish container
+        run: |
+          docker exec blowfish-apache ls -la /var/www/html/
+          docker exec blowfish-apache cat /var/www/html/index.php
+          docker exec blowfish-apache php /var/www/html/cek_koneksi.php
+      # - name: Check inside MySQL container
+      #   run: |
+      #     docker exec docker-mysql mysql -uroot -ppassword -hlocalhost
+
+      - name: Get AUT URL
+        run: |
+          URL=$(ip -f inet -o addr show docker0 | awk '{print $4}' | cut -d '/' -f 1)
+          echo "URL=$URL" >> $GITHUB_ENV
+
+      - name: Check AUT URL
+        run: |
+          curl -L http://${{ env.URL }}/cek_koneksi.php
+
+      - name: Check AUT URL with Race Condition
+        run: |
+          URL=http://${{ env.URL }}/login.php
+          start=$(date +%s%N) # Waktu start dalam nanodetik
+        
+          # Fungsi untuk melakukan curl ke URL dengan output yang ditampilkan
+          function test_url() {
+          echo "Accessing URL: $1"  # Debug output
+            curl --silent --output /dev/null "$1"  # Mengirim output curl ke /dev/null
+          }
+        
+          # Loop sebanyak 100 kali menggunakan race condition
+          for i in $(seq 1 100); do
+            test_url "$URL" &
+          done
+        
+          # Tunggu semua proses selesai
+          wait
+        
+          # Menambahkan penundaan 1 detik untuk memperlambat eksekusi
+          sleep 1
+        
+          end=$(date +%s%N) # Waktu end dalam nanodetik
+          durasi=$((end - start))
+          durasi_detik=$((durasi / 1000000000)) # Mengubah durasi ke detik
+          durasi_nanodetik=$((durasi % 1000000000)) # Sisa nanodetik
+        
+          echo "Waktu eksekusi: $durasi_detik detik dan $durasi_nanodetik nanodetik."
+        
+          # Memeriksa status HTTP terakhir untuk memastikan bahwa proses berjalan dengan benar
+          last_http_status=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+          if [[ $last_http_status -eq 200 ]]; then
+            echo "Proses selesai dengan benar. Status HTTP terakhir: $last_http_status"
+          else
+            echo "Ada masalah dalam proses. Status HTTP terakhir: $last_http_status"
+            exit 1  # Keluar dengan kode error jika ada masalah dalam proses
+          fi
+        env:
+          URL: ${{ env.URL }}
+        
+      - name: Context Setup
+        # env:
+        #     # Set a previously defined secret as an environment variable for this step:
+        #     AUTURL: ${{secrets.B64PASSWORD}}
+        # Replace the "AUTURL" string in the context file with the real base64-encoded password:
+        run: |
+          sed -ie "s/AUTURL/${{ env.URL }}/" badcrud.context
+          cat badcrud.context
+          
+      - name: ZAP Scan
+        uses: hermanka/action-full-scan@master
+        with:
+          target: http://${{ env.URL }}
+          network_name: isolated
+      #     # Additional command line options
+      #     # -j   runs the AJAX spider
+      #     # -U   specifies which user to select from the context file
+          cmd_options: -U "admin" -n badcrud.context
+          
+      - name: stop docker
+        run: docker stop blowfish-apache
+
+
+  # performance-test:
+  #   name: Performance Test
+  #   needs: [build-image, dast]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Calculate End-Users's Duration
+  #       run: |
+  #         start_time=${{ needs.build-image.outputs.start_time }}
+  #         end_time=$(date +%s)
+  #         duration=$((end_time - start_time))
+  #         minutes=$((duration / 60))
+  #         seconds=$((duration % 60))
+  #         echo "Total process by end-user's perspective took $duration seconds."
+  #         echo "Or, more precisely, $minutes minute(s) and $seconds second(s)."
+
+  sast:
+    name: SonarCloud
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      
+      - name: Check host directory
+        run: |
+              pwd
+              ls -la
+              #ls -la db/
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
