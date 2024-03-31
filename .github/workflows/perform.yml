@@ -75,10 +75,6 @@ jobs:
           docker exec blowfish-apache ls -la /var/www/html/
           docker exec blowfish-apache cat /var/www/html/index.php
           docker exec blowfish-apache php /var/www/html/cek_koneksi.php
-      
-      # - name: Check inside MySQL container
-      #   run: |
-      #     docker exec docker-mysql mysql -uroot -ppassword -hlocalhost
 
       - name: Get AUT URL
         run: |
@@ -89,45 +85,50 @@ jobs:
         run: |
           curl -L http://${{ env.URL }}/cek_koneksi.php
 
-      - name: Check AUT URL with Race Condition
+      - name: Execute Curl Script
         run: |
-          URL=http://${{ env.URL }}/login.php
-          start=$(date +%s%N) # Waktu start dalam nanodetik
+          chmod +x race.sh
+          ./race.sh
+          
+      # - name: Check AUT URL with Race Condition
+      #   run: |
+      #     URL=http://${{ env.URL }}/login.php
+      #     start=$(date +%s%N) # Waktu start dalam nanodetik
         
-          # Fungsi untuk melakukan curl ke URL dengan output yang ditampilkan
-          function test_url() {
-          echo "Accessing URL: $1"  # Debug output
-            curl --output /dev/null "$1"  # Mengirim output curl ke /dev/null
-          }
+      #     # Fungsi untuk melakukan curl ke URL dengan output yang ditampilkan
+      #     function test_url() {
+      #     echo "Accessing URL: $1"  # Debug output
+      #       curl --output /dev/null "$1"  # Mengirim output curl ke /dev/null
+      #     }
         
-          # Loop sebanyak 100 kali menggunakan race condition
-          for i in $(seq 1 100); do
-            test_url "$URL" &
-          done
+      #     # Loop sebanyak 100 kali menggunakan race condition
+      #     for i in $(seq 1 100); do
+      #       test_url "$URL" &
+      #     done
         
-          # Tunggu semua proses selesai
-          wait
+      #     # Tunggu semua proses selesai
+      #     wait
         
-          # Menambahkan penundaan 1 detik untuk memperlambat eksekusi
-          sleep 1
+      #     # Menambahkan penundaan 1 detik untuk memperlambat eksekusi
+      #     sleep 1
         
-          end=$(date +%s%N) # Waktu end dalam nanodetik
-          durasi=$((end - start))
-          durasi_detik=$((durasi / 1000000000)) # Mengubah durasi ke detik
-          durasi_nanodetik=$((durasi % 1000000000)) # Sisa nanodetik
+      #     end=$(date +%s%N) # Waktu end dalam nanodetik
+      #     durasi=$((end - start))
+      #     durasi_detik=$((durasi / 1000000000)) # Mengubah durasi ke detik
+      #     durasi_nanodetik=$((durasi % 1000000000)) # Sisa nanodetik
         
-          echo "Waktu eksekusi: $durasi_detik detik dan $durasi_nanodetik nanodetik."
+      #     echo "Waktu eksekusi: $durasi_detik detik dan $durasi_nanodetik nanodetik."
         
-          # Memeriksa status HTTP terakhir untuk memastikan bahwa proses berjalan dengan benar
-          last_http_status=$(curl -o /dev/null -w "%{http_code}" "$URL")
-          if [[ $last_http_status -eq 200 ]]; then
-            echo "Proses selesai dengan benar. Status HTTP terakhir: $last_http_status"
-          else
-            echo "Ada masalah dalam proses. Status HTTP terakhir: $last_http_status"
-            exit 1  # Keluar dengan kode error jika ada masalah dalam proses
-          fi
-        env:
-          URL: ${{ env.URL }}
+      #     # Memeriksa status HTTP terakhir untuk memastikan bahwa proses berjalan dengan benar
+      #     last_http_status=$(curl -o /dev/null -w "%{http_code}" "$URL")
+      #     if [[ $last_http_status -eq 200 ]]; then
+      #       echo "Proses selesai dengan benar. Status HTTP terakhir: $last_http_status"
+      #     else
+      #       echo "Ada masalah dalam proses. Status HTTP terakhir: $last_http_status"
+      #       exit 1  # Keluar dengan kode error jika ada masalah dalam proses
+      #     fi
+      #   env:
+      #     URL: ${{ env.URL }}
         
       - name: Context Setup
         # env:
