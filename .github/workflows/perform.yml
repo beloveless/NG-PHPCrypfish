@@ -47,12 +47,6 @@ jobs:
       - name: Show running containers
         run: docker ps
 
-      # - name: Update Apache Configuration
-      #   run: docker exec blowfish-apache sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/apache2/httpd.conf
-      
-      - name: Display Apache Container Logs
-        run: docker logs blowfish-apache
-
       - name: Check host directory
         run: |
               pwd
@@ -79,8 +73,9 @@ jobs:
       - name: Check inside PHPCrypfish container
         run: |
           docker exec blowfish-apache ls -la /var/www/html/
-        #  docker exec blowfish-apache cat /var/www/html/index.php
-        #  docker exec blowfish-apache php /var/www/html/cek_koneksi.php
+          docker exec blowfish-apache cat /var/www/html/index.php
+          docker exec blowfish-apache php /var/www/html/cek_koneksi.php
+      
       # - name: Check inside MySQL container
       #   run: |
       #     docker exec docker-mysql mysql -uroot -ppassword -hlocalhost
@@ -168,10 +163,10 @@ jobs:
         run: |
               pwd
               ls -la
-              #ls -la db/
+          #   ls -la db/
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
