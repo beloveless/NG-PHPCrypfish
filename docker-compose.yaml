@@ -2,7 +2,6 @@ version: "3.8"
 services:
   blowfish-apache:
     image: phpcrypfish:latest
-    container_name: blowfish-apache
     ports:
       - "80:80"
     depends_on:
@@ -10,7 +9,6 @@ services:
 
   mysql-db:
     image: mysql:latest
-    container_name: blowfish-mysql
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: badcrud
