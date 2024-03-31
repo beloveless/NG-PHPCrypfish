@@ -11,7 +11,7 @@ services:
       - isolated
 
   mysql-db:
-    image: mysql:5.6
+    image: mysql:latest
     container_name: blowfish-mysql
     environment:
       MYSQL_ROOT_PASSWORD: password
@@ -24,5 +24,3 @@ services:
       - ./db/badcrud.sql:/docker-entrypoint-initdb.d/badcrud.sql:ro
     networks:
       - isolated
-
-      

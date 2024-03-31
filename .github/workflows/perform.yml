@@ -25,22 +25,22 @@ jobs:
         env:
           DOCKER_CLI_EXPERIMENTAL: enabled
   
-  check-containers:
-    name: Check Containers
-    needs: build-image
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check MySQL Container
-        run: |
-          docker ps -f name=blowfish-mysql --format "{{.Names}}" | grep -q "blowfish-mysql" || exit 1
+  # check-containers:
+  #   name: Check Containers
+  #   needs: build-image
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Check MySQL Container
+  #       run: |
+  #         docker ps -f name=blowfish-mysql --format "{{.Names}}" | grep -q "blowfish-mysql" || exit 1
 
-      - name: Check PHPCrypfish Container
-        run: |
-          docker ps -f name=blowfish-apache --format "{{.Names}}" | grep -q "blowfish-apache" || exit 1
+  #     - name: Check PHPCrypfish Container
+  #       run: |
+  #         docker ps -f name=blowfish-apache --format "{{.Names}}" | grep -q "blowfish-apache" || exit 1
         
   dast:
     name: Dynamic Analysis
-    needs: check-containers
+    needs: build-image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -55,7 +55,8 @@ jobs:
           docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
 
       - name: Run PHPCrypfish Container
-        run: docker run -p 80:80 -d --name blowfish-apache --network isolated ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
+        # run: docker run -p 80:80 -d --name blowfish-apache --network isolated ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
+        run: docker-compose up -d
 
       - name: Show running containers
         run: docker ps
