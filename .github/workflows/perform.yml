@@ -147,6 +147,11 @@ jobs:
       #     # -j   runs the AJAX spider
       #     # -U   specifies which user to select from the context file
           cmd_options: -U "admin" -n badcrud.context
+
+      - name: Display Scanned URLs
+        run: |
+          echo "Scanned URLs:"
+          cat report_md.md | grep '^[0-9]\+\. http'
           
       - name: stop docker
         run: docker stop blowfish-apache
