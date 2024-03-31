@@ -42,7 +42,7 @@ jobs:
           docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
 
       - name: Run PHPCrypfish Container
-        run: docker run -d --name blowfish-apache --network isolated ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
+        run: docker run -p 80:80 -d --name blowfish-apache --network isolated ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
 
       - name: Show running containers
         run: docker ps
