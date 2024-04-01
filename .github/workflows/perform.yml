@@ -106,7 +106,7 @@ jobs:
       - name: ZAP Scan
         uses: hermanka/action-full-scan@master
         with:
-          target: http://${{ env.URL }}:80
+          target: http://${{ env.URL }}
           network_name: isolated
       #     # Additional command line options
       #     # -j   runs the AJAX spider
