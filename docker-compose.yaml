@@ -9,7 +9,7 @@ services:
       - mysql-db  
 
   mysql-db:
-    image: mysql:latest
+    image: mysql:5.6
     container_name: blowfish-mysql
     environment:
       MYSQL_ROOT_PASSWORD: password
