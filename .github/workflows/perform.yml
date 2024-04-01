@@ -87,7 +87,7 @@ jobs:
 
       - name: Check AUT URL
         run: |
-          curl -L http://${{ env.URL }}/index.php
+          curl -L http://${{ env.URL }}/index-test.php
 
       # - name: Execute Curl Script
       #   run: |
