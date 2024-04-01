@@ -33,15 +33,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # - name: Create isolated network
-      #   run: docker network create --driver bridge isolated 
+      - name: Create isolated network
+        run: docker network create --driver bridge isolated 
 
       # - name: Download image from Docker Hub
       #   run: | 
       #     docker pull loveless2u/phpcrypfish:latest
-
-      - name: Show docker image availibility
-        run: docker images
 
       - name: Run PHPCrypfish Container
         # run: docker run -p 80:80 -d --name blowfish-apache --network isolated ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
@@ -92,10 +89,10 @@ jobs:
         run: |
           curl -L http://${{ env.URL }}/cek_koneksi.php
 
-      - name: Execute Curl Script
-        run: |
-          chmod +x race.sh
-          ./race.sh
+      # - name: Execute Curl Script
+      #   run: |
+      #     chmod +x race.sh
+      #     ./race.sh
         
       - name: Context Setup
         # env:
