@@ -67,7 +67,11 @@ jobs:
         run: docker run --network=isolated -d -p 4444:4444 -p 7900:7900 -v /dev/shm:/dev/shm --name firefox-standalone selenium/standalone-firefox:latest
 
       - name: Wait for Selenium Hub
-        run: sh wait.sh
+        run: |
+          until curl --output /dev/null --silent --head --fail http://localhost:4444; do
+            echo "waiting for selenium hub to be started"
+            sleep 1
+          done      
 
       - name: Check the Hub
         run: curl http://localhost:4444/ui
