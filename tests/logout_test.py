@@ -11,10 +11,12 @@ class Logout_TestCase(unittest.TestCase):
         option.add_argument('--headless')  # Menjalankan browser tanpa antarmuka grafis
         cls.browser = webdriver.Firefox(options=option)
 
-        try:
-            cls.url = os.environ['URL']  # Mengambil URL dari variabel lingkungan
-        except:
-            cls.url = "http://localhost"
+        # Memeriksa apakah variabel lingkungan 'URL' ada dan memiliki nilai
+        cls.url = os.getenv('URL', 'http://localhost')
+
+        # Memastikan bahwa URL memiliki protokol 'http://' jika tidak ada
+        if not cls.url.startswith('http'):
+            cls.url = 'http://' + cls.url
 
     def test(self):
         # Menjalankan serangkaian pengujian
