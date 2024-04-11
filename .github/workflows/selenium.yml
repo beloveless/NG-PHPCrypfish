@@ -79,6 +79,11 @@ jobs:
       - name: Install Selenium client
         run: pip install -U selenium pytest pytest-xdist
 
+      - name: Check host directory
+        run: |
+              pwd
+              ls -la
+
       - name: Run tests using pytest
         run: |
           pytest -v -n 5 tests/
