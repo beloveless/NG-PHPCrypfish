@@ -84,6 +84,13 @@ jobs:
               pwd
               ls -la
 
+      - name: Check URL validity
+        run: |
+          if ! curl -s -o /dev/null -w "%{http_code}" http://${{ env.URL }} | grep '200'; then
+            echo "Invalid URL format or not accessible."
+            exit 1
+          fi
+
       - name: Run tests using pytest
         run: |
           pytest -v -n 5 tests/
