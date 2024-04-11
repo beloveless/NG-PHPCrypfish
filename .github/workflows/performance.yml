@@ -1,4 +1,4 @@
-name: Testing with Selenium 
+name: Performance Testing with Selenium 
 on:
   push:
     branches:
@@ -91,4 +91,4 @@ jobs:
           pytest -v -n 5 tests/
 
       - name: stop docker
-        run: docker stop docker-apache
+        run: docker stop blowfish-apache
