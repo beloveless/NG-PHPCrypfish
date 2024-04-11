@@ -6,28 +6,8 @@ on:
       - main
 
 jobs:
-  # build-image:
-  #   name: Build Images
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v4 
-
-  #     - name: Build PHPCrypfish Image
-  #       run: |
-  #         docker build -t phpcrypfish:latest .
-
-  #     - name: Push Image to Docker Hub
-  #       run: |
-  #         echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
-  #         docker tag phpcrypfish ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
-  #         docker push ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
-  #       env:
-  #         DOCKER_CLI_EXPERIMENTAL: enabled
-  
   dast:
     name: Dynamic Analysis
-    # needs: build-image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -35,10 +15,6 @@ jobs:
 
       - name: Create isolated network
         run: docker network create --driver bridge isolated 
-
-      # - name: Download image from Docker Hub
-      #   run: | 
-      #     docker pull loveless2u/phpcrypfish:latest
 
       - name: Run PHPCrypfish Container
         # run: docker run -p 80:80 -d --name blowfish-apache --network isolated ${{ secrets.DOCKER_HUB_USERNAME }}/phpcrypfish:latest
@@ -88,11 +64,6 @@ jobs:
       - name: Check AUT URL
         run: |
           curl -L http://${{ env.URL }}/index-test.php
-
-      # - name: Execute Curl Script
-      #   run: |
-      #     chmod +x race.sh
-      #     ./race.sh
         
       - name: Context Setup
         # env:
