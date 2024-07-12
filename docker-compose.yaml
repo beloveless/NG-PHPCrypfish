@@ -4,7 +4,7 @@ services:
     image: my-php-site:latest
     container_name: docker-apache
     ports:
-      - "80:80"
+      - "8080:80"
     networks:
       - my-network
 
