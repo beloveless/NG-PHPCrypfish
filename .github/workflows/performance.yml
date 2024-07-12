@@ -15,6 +15,9 @@ jobs:
       - name: Create isolated network
         run: docker network create --driver bridge isolated      
 
+      - name: Build AUT
+        run: docker build -t my-php-site:latest .
+
       - name: Run AUT using docker-compose
         run: docker-compose up -d
 
