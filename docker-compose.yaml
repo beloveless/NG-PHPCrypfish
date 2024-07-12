@@ -1,5 +1,13 @@
 version: "3.8"
 services:
+  docker-apache:
+    image: my-php-site:latest
+    container_name: docker-apache
+    ports:
+      - "80:80"
+    networks:
+      - my-network
+
   blowfish-apache:
     image: loveless2u/phpcrypfish:latest
     container_name: blowfish-apache
@@ -14,9 +22,23 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: badcrud
-      # MYSQL_USER: db_user
-      # MYSQL_PASSWORD: password
+
     ports:
       - "3306:3306"
     volumes:
       - ./db/badcrud.sql:/docker-entrypoint-initdb.d/badcrud.sql:ro
+
+  zap:
+    image: ictu/zap2docker-weekly
+    container_name: zap-container
+    command: ["zap.sh", "-daemon", "-port", "8090", "-host", "0.0.0.0", "-config", "api.disablekey=true", "-ajaxSpider", "-scan", "-recursive", "-spider", "1", "-url", "http://docker-apache/index.php"]
+    ports:
+      - "8090:8090"
+    depends_on:
+      - docker-apache
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge
