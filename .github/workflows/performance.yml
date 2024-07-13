@@ -89,7 +89,7 @@ jobs:
 
       - name: Run tests using pytest
         run: |
-          pytest -v -n tests/
+          pytest -v tests/
 
       - name: stop docker
         run: docker stop blowfish-apache
