@@ -83,6 +83,15 @@ class CreateContact_TestCase(unittest.TestCase):
         self.browser.switch_to.alert.accept()
         time.sleep(3)
 
+        # Melakukan pencarian kembali dan memeriksa apakah kontak sudah dihapus
+        search_query = self.name_query
+        self.browser.find_element(By.ID, 'employee_filter').find_element(By.TAG_NAME, 'input').send_keys(search_query)
+        self.browser.find_element(By.ID, 'employee_filter').find_element(By.TAG_NAME, 'input').send_keys(Keys.ENTER)
+
+        searched_contact_name = self.name_query
+        searched_contact_exists = self.browser.find_elements(By.XPATH, f"//td[contains(text(), '{searched_contact_name}')]")
+        self.assertFalse(searched_contact_exists)
+
     @classmethod
     def tearDownClass(cls):
         # Menutup browser setelah seluruh pengujian selesai

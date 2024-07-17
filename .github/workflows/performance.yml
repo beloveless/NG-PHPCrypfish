@@ -20,15 +20,6 @@ jobs:
 
       - name: Run AUT using docker-compose
         run: docker-compose up -d
-
-      - name: Show running containers
-        run: docker ps
-      
-      - name: Check host directory
-        run: |
-              pwd
-              ls -la
-              ls -la db/
               
       - name: Copy source code to PHPCrypfish container
         run: docker cp web2/. blowfish-apache:/var/www/html
